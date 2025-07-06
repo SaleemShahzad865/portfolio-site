@@ -1,0 +1,271 @@
+<!DOCTYPE html>                      
+<html lang="en">                  
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Freelance Portfolio</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .fade-in {
+            animation: fadeIn 1.2s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .scale-hover:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 6px 12px rgba(20, 184, 166, 0.3);
+        }
+        .teal-glow {
+            box-shadow: 0 0 8px rgba(20, 184, 166, 0.5);
+        }
+        .teal-text {
+            text-shadow: 0 0 4px rgba(20, 184, 166, 0.3);
+        }
+        .project-overlay {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .project-card:hover .project-overlay {
+            opacity: 1;
+        }
+        .link-underline:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Sample data for projects and blogs with functional links
+        const projects = [
+            { id: 1, category: "Embedded Systems", title: "Sports Monitoring Device", description: "Developed a wearable device using Arduino Nano and MPU6050 for real-time sports analytics.", link: "https://github.com/yourusername/sports-monitoring-device", image: "https://via.placeholder.com/400x250/0f766e/ffffff?text=Embedded" },
+            { id: 2, category: "Robotics", title: "Autonomous Rover", description: "Built a robotics platform with STM32 and ROS for navigation and obstacle avoidance.", link: "https://github.com/yourusername/autonomous-rover", image: "https://via.placeholder.com/400x250/0f766e/ffffff?text=Robotics" },
+            { id: 3, category: "AI & ML", title: "Image Recognition Model", description: "Trained a CNN using TensorFlow for real-time object detection in robotics.", link: "https://github.com/yourusername/image-recognition-model", image: "https://via.placeholder.com/400x250/0f766e/ffffff?text=AI" },
+            { id: 4, category: "Embedded Systems", title: "IoT Smart Home System", description: "Designed an ESP32-based system for home automation with MQTT integration.", link: "https://github.com/yourusername/iot-smart-home", image: "https://via.placeholder.com/400x250/0f766e/ffffff?text=IoT" },
+        ];
+
+        const blogs = [
+            { id: 1, title: "Optimizing Arduino Sleep Modes for Low-Power Devices", date: "June 15, 2025", content: "Exploring power-saving techniques for embedded systems using Arduino Nano.", link: "https://medium.com/@yourusername/arduino-sleep-modes" },
+            { id: 2, title: "Building Robust ML Models for Robotics", date: "June 25, 2025", content: "How to integrate TensorFlow Lite with microcontrollers for real-time AI.", link: "https://medium.com/@yourusername/ml-for-robotics" },
+        ];
+
+        // Navigation Component
+        function Navbar() {
+            return (
+                <nav className="bg-gradient-to-r from-teal-600 to-blue-600 text-white p-5 sticky top-0 z-10 glass-effect">
+                    <div className="container mx-auto flex justify-between items-center">
+                        <h1 className="text-3xl font-bold tracking-tight teal-text">Your Name</h1>
+                        <ul className="flex space-x-10 text-lg font-medium">
+                            <li><a href="#home" className="hover:text-teal-100 transition-colors duration-200">Home</a></li>
+                            <li><a href="#projects" className="hover:text-teal-100 transition-colors duration-200">Projects</a></li>
+                            <li><a href="#blog" className="hover:text-teal-100 transition-colors duration-200">Blog</a></li>
+                            <li><a href="#contact" className="hover:text-teal-100 transition-colors duration-200">Contact</a></li>
+                        </ul>
+                    </div>
+                </nav>
+            );
+        }
+
+        // Hero Section
+        function Hero() {
+            return (
+                <section id="home" className="bg-gradient-to-b from-teal-50 to-blue-50 py-32 text-center">
+                    <div className="container mx-auto fade-in">
+                        <h2 className="text-5xl font-bold text-teal-900 mb-6 tracking-tight teal-text">Electrical Engineer & Tech Innovator</h2>
+                        <p className="text-xl text-gray-700 mb-10 max-w-3xl mx-auto font-light">Hi, I'm Your Name! I craft cutting-edge solutions in embedded systems, robotics, and AI/ML to shape the future of technology.</p>
+                        <a href="#contact" className="bg-teal-600 text-white px-10 py-4 rounded-full hover:bg-teal-500 transition-colors duration-200 text-lg font-medium teal-glow">Hire Me</a>
+                    </div>
+                </section>
+            );
+        }
+
+        // Projects Section
+        function Projects() {
+            const categories = [...new Set(projects.map(project => project.category))];
+            const [selectedCategory, setSelectedCategory] = useState("All");
+
+            const filteredProjects = selectedCategory === "All"
+                ? projects
+                : projects.filter(project => project.category === selectedCategory);
+
+            return (
+                <section id="projects" className="py-24 nullable bg-white">
+                    <div className="container mx-auto">
+                        <h2 className="text-4xl font-bold text-center text-teal-900 mb-12 tracking-tight teal-text fade-in">My Projects</h2>
+                        <div className="flex justify-center mb-10">
+                            <select
+                                className="p-3 bg-white text-teal-900 border border-teal-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                            >
+                                <option value="All">All Categories</option>
+                                {categories.map(category => (
+                                    <option key={category} value={category}>{category}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                            {filteredProjects.map(project => (
+                                <div key={project.id} className="relative bg-white border border-teal-200 rounded-xl overflow-hidden scale-hover teal-glow fade-in project-card">
+                                    <img src={project.image} alt={project.title} className="w-full h-56 object-cover" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-teal-900/80 to-transparent project-overlay flex items-end p-6">
+                                        <div>
+                                            <h3 className="text-xl font-semibold text-white">{project.title}</h3>
+                                            <p className="text-gray-200 mt-2">{project.description}</p>
+                                            <a href={project.link} target="_blank" rel="noopener noreferrer" className="text-teal-300 hover:text-teal-100 font-medium mt-4 inline-block link-underline">View Project</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        // Blog Section
+        function Blog() {
+            return (
+                <section id="blog" className="py-24 bg-gray-100">
+                    <div className="container mx-auto">
+                        <h2 className="text-4xl font-bold text-center text-teal-900 mb-12 tracking-tight teal-text fade<Sprite
+                        -in">Tech Insights</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            {blogs.map(blog => (
+                                <div key={blog.id} className="bg-white border border-teal-200 rounded-xl p-6 scale-hover teal-glow fade-in">
+                                    <h3 className="text-xl font-semibold text-teal-900">{blog.title}</h3>
+                                    <p className="text-gray-500 text-sm mt-1">{blog.date}</p>
+                                    <p className="text-gray-600 mt-3">{blog.content}</p>
+                                    <a href={blog.link} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:text-teal-800 font-medium mt-4 inline-block link-underline">Read More</a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        // Contact Section
+        function Contact() {
+            const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+            const [error, setError] = useState("");
+
+            const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setFormData({ ...formData, [name]: value });
+            };
+
+            const handleSubmit = () => {
+                if (!formData.name || !formData.email || !formData.message) {
+                    setError("Please fill in all fields.");
+                    return;
+                }
+                if (!/\S+@\S+\.\S+/.test(formData.email)) {
+                    setError("Please enter a valid email address.");
+                    return;
+                }
+                setError("");
+                // Placeholder for form submission logic (e.g., API call)
+                console.log("Form submitted:", formData);
+            };
+
+            return (
+                <section id="contact" className="py-24 bg-white">
+                    <div className="container mx-auto text-center">
+                        <h2 className="text-4xl font-bold text-teal-900 mb-12 tracking-tight teal-text fade-in">Let's Innovate Together</h2>
+                        <p className="text-xl text-gray-700 mb-10 max-w-3xl mx-auto font-light">Got an idea for embedded systems, robotics, or AI/ML? Let's bring it to life!</p>
+                        <div className="max-w-lg mx-auto glass-effect p-6 rounded-xl">
+                            {error && <p className="text-red-500 mb-4">{error}</p>}
+                            <input
+                                type="text"
+                                name="name"
+                                placeholder="Your Name"
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                className="w-full p-3 mb-4 bg-white text-gray-900 border border-teal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            />
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="Your Email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                className="w-full p-3 mb-4 bg-white text-gray-900 border border-teal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            />
+                            <textarea
+                                name="message"
+                                placeholder="Your Message"
+                                value={formData.message}
+                                onChange={handleInputChange}
+                                className="w-full p-3 mb-4 bg-white text-gray-900 border border-teal-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                rows="5"
+                            ></textarea>
+                            <button
+                                onClick={handleSubmit}
+                                className="bg-teal-600 text-white px-10 py-4 rounded-full hover:bg-teal-500 transition-colors duration-200 w-full text-lg font-medium teal-glow"
+                            >
+                                Send Message
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            );
+        }
+
+        // Error Boundary Component
+        class ErrorBoundary extends React.Component {
+            state = { hasError: false };
+
+            static getDerivedStateFromError(error) {
+                return { hasError: true };
+            }
+
+            render() {
+                if (this.state.hasError) {
+                    return <h1>Something went wrong. Please refresh the page.</h1>;
+                }
+                return this.props.children;
+            }
+        }
+
+        // Main App Component
+        function App() {
+            return (
+                <ErrorBoundary>
+                    <div>
+                        <Navbar />
+                        <Hero />
+                        <Projects />
+                        <Blog />
+                        <Contact />
+                    </div>
+                </ErrorBoundary>
+            );
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
+
